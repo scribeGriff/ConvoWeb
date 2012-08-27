@@ -54,8 +54,6 @@ class DateTime {
       meridian = 'am';
     }
 
-    minutes = minute < 10 ? '0$minute' : '$minute';
-
     if (short) {
       return dateTime = '$hour:$minutes$meridian $month/$day/$year';
     } else {
