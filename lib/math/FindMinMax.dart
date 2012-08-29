@@ -13,9 +13,11 @@ num findMax(List input) => new _FindMinMax().search(input, true);
 class _FindMinMax {
   var randNum;
 
+  _FindMinMax()
+      : randNum = new Random();
+
   num search(List input, bool highOrder) {
     int orderStat;
-    randNum = new Random();
     //Do not modify original list.
     List inList = new List.from(input);
     if (highOrder) {

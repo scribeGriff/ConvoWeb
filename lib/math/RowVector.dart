@@ -14,7 +14,7 @@ class RowVector {
 
   const RowVector(this.start, this.end, this.increment);
 
-  List get newVector() => _create();
+  List get newVector => _create();
 
   List _create() {
     List a = [];

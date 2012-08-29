@@ -35,15 +35,23 @@ Plot2D plot(List ydata, [List xdata = null, String style = 'data',
   int height = r == 1 ? gphSize : (gphSize * 1.5 / r).toInt();
   var graphContainer = query('#graph');
   CanvasElement plotCanvas = new CanvasElement();
-  plotCanvas.attributes = ({
-    "id": "plotCanvas$i",
-    "class": "plotCanvas",
-    "width": width,
-    "height": height,
-  });
+  //This used to work but no longer does and I'm not sure why.
+  //  plotCanvas.attributes = ({
+  //    "id": "plotCanvas$i",
+  //    "class": "plotCanvas",
+  //    "width": width,
+  //    "height": height,
+  //  });
+  //Now it seems you have to spell it out like this.
+  plotCanvas.id = "plotCanvas$i";
+  plotCanvas.attributes["class"] = "plotCanvas";
+  plotCanvas.width = width;
+  plotCanvas.height = height;
   graphContainer.nodes.add(plotCanvas);
   CanvasRenderingContext2D context = plotCanvas.context2d;
 
+  //If no xdata was passed, create a row vector
+  //based on the length of ydata.
   if (xdata == null) xdata = vec(1, ydata.length);
   return new Plot2D(context, ydata, xdata, style, width, height);
 }
@@ -52,10 +60,11 @@ class Plot2D {
   AxisConfigResults yAxisCfg;
   AxisConfigResults xAxisCfg;
 
-  final border = 100;
-  final borderL = 50;
-  final borderT = 50;
-  final tickSize = 5;
+  final border;
+  final borderL;
+  final borderT;
+  final tickSize;
+  final index;
 
   CanvasRenderingContext2D context;
   List xdata, ydata;
@@ -64,10 +73,12 @@ class Plot2D {
   num xmin, xmax, xdiv, xstep;
   num ymin, ymax, ydiv, ystep;
 
-  int index;
-
   Plot2D(this.context, this.ydata, this.xdata, this.style, this.width, this.height)
-      : index = 0 {
+      : border = 100,
+        borderL = 50,
+        borderT = 50,
+        tickSize = 5,
+        index = 0 {
 
     num tickPt;
 
@@ -110,8 +121,8 @@ class Plot2D {
     tickPt = xmin;
     context.textAlign = 'center';
     context.font = '10pt Consolas';
-    for (var i = borderL + 0.0; i <= width - (border - borderL); i += offset) {
-      context.fillText(tickPt.toInt().toString(), i.toInt(),
+    for (var j = xmin; j <= xmax; j += increment) {
+      context.fillText(j.toInt().toString(), borderL + (j - xmin) * offset,
           height - borderT + (borderT / 3));
       tickPt += increment;
     }
@@ -144,45 +155,41 @@ class Plot2D {
     context.lineWidth = 2;
     if (style == 'data') {
       //Add the data.
-      for (var i = borderL + offset; i < width - (border - borderL); i += offset) {
+      for (var j = 0; j < xdata.length; j++) {
+        var i = borderL + (((xdata[j]) - xmin)/xstep * xdiv);
         //sample data
         context.beginPath();
         context.moveTo(i.toInt(), height - borderT);
         context.lineTo(i.toInt(), height - borderT -
-            (((ydata[index]) - ymin)/ystep * ydiv));
+            (((ydata[j]) - ymin)/ystep * ydiv));
         context.stroke();
         //sample points
         context.beginPath();
         context.arc(i.toInt(), height - borderT -
-            (((ydata[index]) - ymin)/ystep * ydiv), 4, 0, 2 * PI, false);
+            (((ydata[j]) - ymin)/ystep * ydiv), 4, 0, 2 * PI, false);
         context.closePath();
         context.stroke();
-        index++;
       }
     } else if (style == 'line' || style == 'linpts') {
       context.beginPath();
       context.lineJoin = "round";
       context.moveTo(borderL + (((xdata[index]) - xmin)/xstep * xdiv),
           height - borderT - (((ydata[index]) - ymin)/ystep * ydiv));
-      index++;
-      for (var i = borderL + (((xdata[index]) - xmin)/xstep * xdiv);
-          i < width - (border - borderL); i += xdiv / xstep) {
+      for (var j = 1; j < xdata.length; j++) {
+        var i = borderL + (((xdata[j]) - xmin)/xstep * xdiv);
         //sample data
         context.lineTo(i.toInt(), height - borderT -
-            (((ydata[index]) - ymin)/ystep * ydiv));
+            (((ydata[j]) - ymin)/ystep * ydiv));
         context.stroke();
-        index++;
       }
       if (style == 'linpts') {
-        index = 0;
-        for (var i = borderL + (((xdata[index]) - xmin)/xstep * xdiv);
-            i < width - (border - borderL); i += xdiv / xstep) {
+        for (var j = 0; j < xdata.length; j++) {
+          var i = borderL + (((xdata[j]) - xmin)/xstep * xdiv);
           context.beginPath();
           context.arc(i.toInt(), height - borderT -
-              (((ydata[index]) - ymin)/ystep * ydiv), 4, 0, 2 * PI, false);
+              (((ydata[j]) - ymin)/ystep * ydiv), 4, 0, 2 * PI, false);
           context.closePath();
           context.fill();
-          index++;
         }
       }
     }
