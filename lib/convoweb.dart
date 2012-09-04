@@ -19,3 +19,22 @@
 #source('math/row_vector.dart');
 #source('visualization/axis_config.dart');
 #source('visualization/plot2d.dart');
+
+void main() {
+  String host = 'local';
+  int port = 8080;
+  var display = query('#console');
+  var request = 'Send data request';
+  Future reqData = requestDataWS(host, port, request, display);
+  reqData.then((data) {
+    List real = data["real"];
+    List waveform = real.getRange(0, 500);
+    var p1 = plot(waveform, style: 'line', color: 'green');
+    p1
+      ..grid()
+      ..xlabel('time')
+      ..ylabel('amplitude')
+      ..title('Waveform Generator')
+      ..date(true);
+    });
+}

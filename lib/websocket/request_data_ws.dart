@@ -43,8 +43,8 @@ Future requestDataWS(String host, int port, var req, [Element display = null]) {
 
   _ws.on.message.add((MessageEvent msg) {
     var data = JSON.parse(msg.data);
-    if (display != null) addHTML('The following data was received: <br/>'
-        '${data["real"]}<br/>${data["imag"]}', display);
+    if (display != null) addHTML('Successfully received data'
+        'from the server. <br/>', display);
     _ws.close(1000, 'Got the data.  Thanks!');
     _c.complete(data);
   });
