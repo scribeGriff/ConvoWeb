@@ -16,6 +16,7 @@
  *                                                                       *
  * ********************************************************************* */
 
+//This is not currently working with editor build 12144.
 Future requestDataWS(String host, int port, var req, [Element display = null]) {
   Completer _c = new Completer();
   if (host == 'local') host = '127.0.0.1';

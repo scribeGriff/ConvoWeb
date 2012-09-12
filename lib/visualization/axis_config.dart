@@ -23,6 +23,10 @@ class AxisConfig {
     //Update the number of divisions to be a nice multiple
     num minsc = ((findMin(data)/divSp).floor())*divSp;
     num maxsc = ((findMax(data)/divSp).ceil())*divSp;
+    if (minsc == maxsc) {
+      minsc = 0.5 * minsc;
+      maxsc = 1.5 * maxsc;
+    }
     //Update actual distance of each major division
     num delDiv = distance * divSp/(maxsc - minsc);
     return new AxisConfigResults(delDiv, minsc, maxsc, divSp);
@@ -31,6 +35,13 @@ class AxisConfig {
   num idealRange(List data) {
     num ideal;
     num range = findMax(data) - findMin(data);
+    if (range == 0) {
+      if (data[0] == 0) {
+        range = 1;
+      } else {
+        range = data[0];
+      }
+    }
     num exponent = (log10(range)).floor();
     num fraction = range/pow(10, exponent);
 

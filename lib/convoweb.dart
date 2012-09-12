@@ -21,6 +21,8 @@
 #source('visualization/plot2d.dart');
 
 void main() {
+  // Example retrieving data from server and plotting.
+  // Websocket not currently working in build 12144.  Under investigation.
   String host = 'local';
   int port = 8080;
   var display = query('#console');
