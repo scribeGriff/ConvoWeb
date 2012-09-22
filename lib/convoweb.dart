@@ -4,10 +4,11 @@
  *   Library: ConvoWeb (c) 2012 scribeGriff                    *
  * *********************************************************** */
 
-#library('convoweb');
-#import('dart:html');
-#import('dart:json');
-#import('dart:math');
+#library ('convoweb');
+
+#import ('dart:html');
+#import ('dart:json');
+#import ('dart:math');
 
 #source('utilities/html_dom.dart');
 #source('utilities/axis_config_results.dart');
@@ -22,21 +23,38 @@
 
 void main() {
   // Example retrieving data from server and plotting.
-  // Websocket not currently working in build 12144.  Under investigation.
   String host = 'local';
   int port = 8080;
   var display = query('#console');
   var request = 'Send data request';
+  //Request the data from the server using a Future.
   Future reqData = requestDataWS(host, port, request, display);
+  //We now have the data so lets plot it.
   reqData.then((data) {
-    List real = data["real"];
-    List waveform = real.getRange(0, 500);
-    var p1 = plot(waveform, style: 'line', color: 'green');
-    p1
-      ..grid()
-      ..xlabel('time')
-      ..ylabel('amplitude')
-      ..title('Waveform Generator')
-      ..date(true);
-    });
+    //Get the keys.  This is primarily done to allow sorting.
+    var keys = data.getKeys();
+    //Sort keys if there is more than 1.
+    if (data.length > 1) {
+      keys.sort((a, b) => a.compareTo(b));
+    }
+    //Create a list to hold all the plots.
+    var plots = new List(keys.length);
+    //Plot the data using the plot() library function.
+    for (var i = 0; i < keys.length; i++) {
+      List waveform = data[keys[i]]["real"].getRange(0, 500);
+      plots[i] = plot(waveform, style: 'line', color: 'green',
+          range: keys.length, index: i+1);
+      plots[i]
+        ..grid()
+        ..xlabel('time (samples)')
+        ..ylabel('amplitude')
+        ..title(keys[i]);
+    }
+    //Put the time stamp after the last plot.
+    plots[keys.length - 1].date(true);
+    //Save last plot as a PNG image;
+    plots[keys.length - 1].save();
+    //Save all plots as PNG image;
+    var myPlotWindow = saveAll(plots);
+  });
 }

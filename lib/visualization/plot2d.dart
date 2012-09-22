@@ -16,7 +16,8 @@
  *       xlabel(String xlabelName, [String labelColor]),                 *
  *       ylabel(String ylabelName, [String labelColor]),                 *
  *       title(String title, [String titleColor]),                       *
- *       date()                                                          *
+ *       date([bool short])                                              *
+ *       save()                                                          *
  *   Usage (given a List of numbers called real):                        *
  *       var p1 = plot(real);                                            *
  *       p1.grid();                                                      *
@@ -24,20 +25,22 @@
  *       p1.ylabel('data');                                              *
  *       p1.title('Example of Plotting Sampled Data');                   *
  *       p1.date();                                                      *
+ *       p1.save();                                                      *
  *                                                                       *
  * ********************************************************************* */
 
 // Use plot as a wrapper to private class _Plot2D.
 Plot2D plot(List ydata, [List xdata = null, String style = 'data',
-    String color = 'black', int r = 1, int i = 1]) {
+    String color = 'black', int range = 1, int index = 1, bool large = true]) {
   final gphSize = 600;
   final border = 100;
   int width = gphSize;
-  int height = r == 1 ? gphSize : (gphSize * 1.5 / r).toInt();
+  int scalePlot = large ? 2 : range;
+  int height = range == 1 ? gphSize : (gphSize * 1.5 / scalePlot).toInt();
   var graphContainer = query('#graph');
   CanvasElement plotCanvas = new CanvasElement();
     plotCanvas.attributes = ({
-      "id": "plotCanvas$i",
+      "id": "plotCanvas$index",
       "class": "plotCanvas",
       "width": width,
       "height": height,
@@ -155,14 +158,16 @@ class Plot2D {
       ..textAlign = 'right';
     tickPt = ymin;
     if (ystep == ystep.toInt()) {
-      for (var i = height - borderT; i > borderT - ydiv; i -= ydiv) {
+      for (var i = height - borderT; i > borderT - ydiv / 2; i -= ydiv) {
         context.fillText(tickPt.toInt().toString(), borderL - tickSize, i.toInt());
         tickPt += ystep;
       }
     } else {
       // Need test cases for exponent, precision, fixed number labels.
-      for (var i = height - borderT; i > borderT - ydiv; i -= ydiv) {
-        context.fillText(tickPt.toStringAsFixed(2), borderL - tickSize, i.toInt());
+      var numDigits = 2;
+      if (ymax < 0.01) numDigits = 3;
+      for (var i = height - borderT; i > borderT - ydiv / 2; i -= ydiv) {
+        context.fillText(tickPt.toStringAsFixed(numDigits), borderL - tickSize, i.toInt());
         tickPt += ystep;
       }
     }
@@ -290,4 +295,32 @@ class Plot2D {
       ..font = '10pt Candara'
       ..fillText(dateTime, width, height - tickSize);
   }
+
+  //Method for saving a single plot as a PNG image.
+  void save() {
+    window.open(context.canvas.toDataURL('image/png'), 'plotWindow');
+  }
+}
+
+/*********************************************************************** *
+ * Function saveAll(List plots) create a new canvas and adds all         *
+ * the plot canvas from the list.  It then creates a new window which    *
+ * contains a PNG image of all the plots to allow for saving.            *
+ *                                                                       *
+ * ********************************************************************* */
+Window saveAll(List plots) {
+  CanvasElement plotAllCanvas = new CanvasElement();
+  int width = plots[0].context.canvas.width;
+  int height = plots[0].context.canvas.height;
+  plotAllCanvas.attributes = ({
+    "id": "plotAllCanvas",
+    "class": "plotAllCanvas",
+    "width": width,
+    "height": plots.length * height,
+  });
+  CanvasRenderingContext2D contextAll = plotAllCanvas.context2d;
+  for (var i = 0; i < plots.length; i++) {
+    contextAll.drawImage(plots[i].context.canvas, 0, i * height);
+  }
+  return window.open(contextAll.canvas.toDataURL('image/png'), 'plotAllWindow');
 }
