@@ -30,8 +30,8 @@
  * ********************************************************************* */
 
 // Use plot as a wrapper to private class _Plot2D.
-Plot2D plot(List ydata, [List xdata = null, String style = 'data',
-    String color = 'black', int range = 1, int index = 1, bool large = true]) {
+Plot2D plot(List ydata, {List xdata: null, String style: 'data',
+  String color: 'black', int range: 1, int index: 1, bool large: true}) {
   final gphSize = 600;
   final border = 100;
   int width = gphSize;
@@ -47,6 +47,9 @@ Plot2D plot(List ydata, [List xdata = null, String style = 'data',
     });
   graphContainer.nodes.add(plotCanvas);
   CanvasRenderingContext2D context = plotCanvas.context2d;
+  context.fillStyle = 'white';
+  context.fillRect(0, 0, width, height);
+  context.fillStyle = 'black';
 
   //If no xdata was passed, create a row vector
   //based on the length of ydata.
@@ -308,19 +311,20 @@ class Plot2D {
  * contains a PNG image of all the plots to allow for saving.            *
  *                                                                       *
  * ********************************************************************* */
-Window saveAll(List plots) {
+Window saveAll(List plots, [num scale = 1.0]) {
   CanvasElement plotAllCanvas = new CanvasElement();
-  int width = plots[0].context.canvas.width;
-  int height = plots[0].context.canvas.height;
+  num width = plots[0].context.canvas.width * scale;
+  num height = plots[0].context.canvas.height * scale;
+  final margin = 20;
   plotAllCanvas.attributes = ({
     "id": "plotAllCanvas",
     "class": "plotAllCanvas",
     "width": width,
-    "height": plots.length * height,
+    "height": plots.length * (height + margin),
   });
   CanvasRenderingContext2D contextAll = plotAllCanvas.context2d;
   for (var i = 0; i < plots.length; i++) {
-    contextAll.drawImage(plots[i].context.canvas, 0, i * height);
+    contextAll.drawImage(plots[i].context.canvas, 0, i * (height + margin), width, height);
   }
   return window.open(contextAll.canvas.toDataURL('image/png'), 'plotAllWindow');
 }

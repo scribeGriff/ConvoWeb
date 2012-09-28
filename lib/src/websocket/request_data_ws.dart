@@ -22,7 +22,9 @@ Future requestDataWS(String host, int port, var req, [Element display = null]) {
   if (host == 'local') host = '127.0.0.1';
   WebSocket _ws = new WebSocket('ws://$host:$port/ws');
 
-  if (display != null) addHTML('Opening connection at $host:$port', display);
+  if (display != null) {
+    display.addHTML('Opening connection at $host:$port');
+  }
   _ws.on.open.add((Event opn) {
     Date sent = new Date.fromMillisecondsSinceEpoch(opn.timeStamp);
     String request = JSON.stringify({"request": req, "date": '$sent'});
@@ -31,21 +33,26 @@ Future requestDataWS(String host, int port, var req, [Element display = null]) {
 
   _ws.on.close.add((CloseEvent cls) {
     if (display != null) {
-      if (cls.wasClean) addHTML('Connection closed satisfactorily', display);
-      else addHTML('Connection closed but an error occurred.', display);
+      if (cls.wasClean) {
+        display.addHTML('Connection closed satisfactorily');
+      } else {
+        display.addHTML('Connection closed but an error occurred.');
+      }
     }
   });
 
   _ws.on.error.add((ErrorEvent err) {
-    if (display != null) addHTML('There was an error with the connection:'
-        '${err.message}', display);
+    if (display != null) {
+      display.addHTML('There was an error with the connection: ${err.message}');
+    }
     _c.complete(null);
   });
 
   _ws.on.message.add((MessageEvent msg) {
     var data = JSON.parse(msg.data);
-    if (display != null) addHTML('Successfully received data '
-        'from the server. <br/>', display);
+    if (display != null) {
+      display.addHTML('Successfully received data from the server. <br/>');
+    }
     _ws.close(1000, 'Got the data.  Thanks!');
     _c.complete(data);
   });

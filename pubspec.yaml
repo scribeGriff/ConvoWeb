@@ -1,0 +1,8 @@
+name: convoweb
+description: A Signal Processing Web Application for Dart
+version: 0.0.1
+author: Richard Griffith <scribe.griff@gmail.com>
+homepage: http://www.scribegriff.com
+dependencies:
+  unittest:
+    sdk: unittest
