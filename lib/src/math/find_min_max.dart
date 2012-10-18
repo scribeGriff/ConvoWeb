@@ -1,3 +1,5 @@
+part of convoweb;
+
 /* ****************************************************** *
  *   Class _FindMinMax returns min and max of a list.     *
  *   Library: ConvoWeb (c) 2012 scribeGriff               *
@@ -32,9 +34,10 @@ class _FindMinMax {
     if (lo == hi) return inList[lo];
     int j = partition(inList, lo, hi);
     int length = j - lo + 1;
-    if (length == order) return inList[j];
-    else if (order < length) return rselect(inList, lo, j - 1, order);
-    else return rselect(inList, j + 1, hi, order - length);
+    if (length == order) { return inList[j];
+    } else if (order < length) { return rselect(inList, lo, j - 1, order);
+    } else { return rselect(inList, j + 1, hi, order - length);
+    }
   }
 
   int partition(List array, int lo, int hi) {

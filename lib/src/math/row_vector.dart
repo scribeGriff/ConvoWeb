@@ -1,3 +1,5 @@
+part of convoweb;
+
 /* ****************************************************** *
  *   Creating Row Vectors                                 *
  *   Library: ConvoWeb (c) 2012 scribeGriff               *

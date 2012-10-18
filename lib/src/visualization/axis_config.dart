@@ -1,3 +1,5 @@
+part of convoweb;
+
 /* ************************************************************ *
  *  Calculate optimum tick, min and max                         *
  *  Library: ConvoWeb (c) 2012 scribeGriff                      *
@@ -51,7 +53,8 @@ class AxisConfig {
       ideal = 2;
     } else if(fraction <= 5) {
       ideal = 5;
-    } else ideal = 10;
+    } else { ideal = 10;
+    }
     return ideal * pow(10, exponent);
   }
 
@@ -59,9 +62,9 @@ class AxisConfig {
     num range = delta/maxNumTics;
     int exponent = (log10(range)).floor().toInt();
     range *= pow(10.0, -exponent);
-    if (range > 5.0) range = 10.0;
-    else if (range > 2.0) range = 5.0;
-    else if (range > 1.0) range = 2.0;
+    if (range > 5.0) { range = 10.0;
+    } else if (range > 2.0) { range = 5.0;
+    } else if (range > 1.0) range = 2.0;
     range *= pow(10.0, exponent);
     return range;
   }

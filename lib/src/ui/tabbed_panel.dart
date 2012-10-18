@@ -1,3 +1,5 @@
+part of convoweb;
+
 /* ********************************************************************* *
  *   Class TabbedPanel()                                                 *
  *   Library: ConvoWeb (c) 2012 scribeGriff                              *

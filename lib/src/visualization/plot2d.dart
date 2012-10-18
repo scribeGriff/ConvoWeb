@@ -1,3 +1,5 @@
+part of convoweb;
+
 /* ********************************************************************* *
  *   Class Plot2D                                                        *
  *   Library: ConvoWeb (c) 2012 scribeGriff                              *
@@ -311,7 +313,7 @@ class Plot2D {
  * contains a PNG image of all the plots to allow for saving.            *
  *                                                                       *
  * ********************************************************************* */
-Window saveAll(List plots, [num scale = 1.0]) {
+Window saveAll(List plots, {num scale: 1.0}) {
   CanvasElement plotAllCanvas = new CanvasElement();
   num width = plots[0].context.canvas.width * scale;
   num height = plots[0].context.canvas.height * scale;

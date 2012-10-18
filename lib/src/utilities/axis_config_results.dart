@@ -1,3 +1,5 @@
+part of convoweb;
+
 /* ****************************************************** *
  *   AxisConfig results class                             *
  *   Library: ConvoWeb (c) 2012 scribeGriff               *

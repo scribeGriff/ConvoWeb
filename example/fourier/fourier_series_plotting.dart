@@ -6,9 +6,10 @@
  *       example/fourier/fourier_series_sound.dart             *
  * *********************************************************** */
 
-#import('../../lib/convoweb.dart');
-//Not sure why this import is required since it was imported by the library.
-#import('dart:html');
+import 'package:convoweb/convoweb.dart';
+// Not sure why this is required since it is imported
+// inside the convoweb package.
+import 'dart:html';
 
 void main() {
   // Example retrieving data from server and plotting.
@@ -37,17 +38,17 @@ void main() {
     List plots = new List(keys.length);
     //Plot the data using the plot() library function.
     for (var i = 0; i < keys.length; i++) {
-      List waveform = data[keys[i]]["real"];
-      plots[i] = plot(waveform, xdata: xvec, style: 'line', color: 'green',
+      List waveform = data[keys[i]]["real"].getRange(0, 500);
+      plots[i] = plot(waveform, style: 'line', color: 'green',
           range: keys.length, index: i+1);
       plots[i]
         ..grid()
-        ..xlabel('time (msecs)')
+        ..xlabel('time (samples)')
         ..ylabel('amplitude')
         ..title(keys[i]);
     }
     //Put the time stamp after the last plot.
-    plots[plots.length - 1].date(true);
+    plots[0].date(true);
     //Save last plot as a PNG image;
     plots[0].save();
     //Save all plots as PNG image;

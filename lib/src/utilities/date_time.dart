@@ -1,3 +1,5 @@
+part of convoweb;
+
 /* ****************************************************** *
  *   DateTime class                                       *
  *   Method stamp([bool short = false]) returns           *
