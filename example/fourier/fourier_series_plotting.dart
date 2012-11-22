@@ -29,7 +29,7 @@ void main() {
   List xvec = vec(0, sndSample, sndSample / (sndLength - 1));
   reqData.then((data) {
     //Get the keys.  This is primarily done to allow sorting.
-    List keys = data.getKeys();
+    List keys = data.keys;
     //Sort keys if there is more than 1.
     if (data.length > 1) {
       keys.sort((a, b) => a.compareTo(b));
