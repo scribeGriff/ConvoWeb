@@ -7,6 +7,8 @@
  * *********************************************************** */
 
 import 'package:convoweb/convoweb.dart';
+import 'package:convolab/convolab.dart';
+
 // Not sure why this is required since it is imported
 // inside the convoweb package.
 import 'dart:html';

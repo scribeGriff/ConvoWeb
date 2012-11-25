@@ -2,7 +2,7 @@
 
 ## A signal processing webapp in Dart ##
 
-Very preliminary and very much a work in progress.  In other words, we're just getting started.  
+A client side data visualization application for use with the signal processing algorithms in ConvoLab.  
 
 ----------
 
@@ -13,7 +13,7 @@ The application is intended to provide a web based data analysis tool in the tra
 2.  Full featured plotting in both 2D and 3D 
 3.  Server access through websockets
 
-More details to come.
+Can import the ConvoLab algorithm library directly or communicate with the server side application ConvoHio using websockets.
 
 ----------  
 ## Example Usage: ##
@@ -23,13 +23,14 @@ Sandbox sequence might look something like:
     >> var y = fft(x);
     >> p1 = plot(y.real);
     >> p1.grid();
-    >> p1.xlabel('Samples (n)');
-    >> p1.ylabel('data');
-    >> p1.title('FFT of Samples');
+    >> p1.xlabel('time (samples)');
+    >> p1.ylabel('amplitude');
+    >> p1.title('Waveform');
     >> p1.date(true);
 
-A simple websocket access:
+Simple websocket access:
 
+    import 'package:convolab/convolab.dart';
     void main() {
       String host = 'local';
       int port = 8080;
@@ -44,7 +45,7 @@ A simple websocket access:
       });
     }
 
-A sample plot:
+A sample plot from the plotting tool:
 
-![](http://www.scribegriff.com/dartlang/github/Convolab/ConvoWeb/ConvoWeb-Plotting.jpg)
+![](http://www.scribegriff.com/dartlang/github/Convolab/ConvoWeb/ConvoWeb-Plotting-Sound.png)
 
