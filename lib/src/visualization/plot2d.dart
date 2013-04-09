@@ -1,51 +1,54 @@
+// Copyright (c) 2013, scribeGriff (Richard Griffith)
+// https://github.com/scribeGriff/ConvoWeb
+// All rights reserved.  Please see the LICENSE.md file.
+
 part of convoweb;
 
-/* ********************************************************************* *
- *   Class Plot2D                                                        *
- *   Library: ConvoWeb (c) 2012 scribeGriff                              *
- *   Plot data with canvas element in 2D                                 *
- *   Note - May need to convert this to SVG for better graphics.         *
- *   If xdata not specified, a vector is generated equivalent            *
- *   to the size of ydata in units from 1 to ydata.length.               *
- *   Current styles supported:                                           *
- *       data (default),                                                 *
- *       line,                                                           *
- *       linpts (line with points)                                       *
- *   Variable r is the range which specifies how many subplots (1 - 3).  *
- *   Variable i is the index of the subplot (1 - 3).                     *
- *   Supported methods are:                                              *
- *       grid(),                                                         *
- *       xlabel(String xlabelName, [String labelColor]),                 *
- *       ylabel(String ylabelName, [String labelColor]),                 *
- *       title(String title, [String titleColor]),                       *
- *       date([bool short])                                              *
- *       save()                                                          *
- *   Usage (given a List of numbers called real):                        *
- *       var p1 = plot(real);                                            *
- *       p1.grid();                                                      *
- *       p1.xlabel('Samples (n)');                                       *
- *       p1.ylabel('data');                                              *
- *       p1.title('Example of Plotting Sampled Data');                   *
- *       p1.date();                                                      *
- *       p1.save();                                                      *
- *                                                                       *
- * ********************************************************************* */
+/**
+ * Class Plot2D plots data with canvas element in 2D
+ * If xdata not specified, a vector is generated equivalent
+ * to the size of ydata in units from 1 to ydata.length.
+ * Current styles supported:
+ * *data (default),
+ * *points,
+ * *line,
+ * *linpts (line with points)
+ * Variable r is the range which specifies how many subplots (1 - 4).
+ * Variable i is the index of the subplot (1 - 4).
+ * Supported methods are:
+ *     grid(),
+ *     xlabel(String xlabelName, [String labelColor]),
+ *     ylabel(String ylabelName, [String labelColor]),
+ *     title(String title, [String titleColor]),
+ *     date([bool short])
+ *     save()
+ * Usage (given a List of numbers called real):
+ *     var p1 = plot(real);
+ *     p1.grid();
+ *     p1.xlabel('Samples (n)');
+ *     p1.ylabel('data');
+ *     p1.title('Example of Plotting Sampled Data');
+ *     p1.date();
+ *     p1.save();
+ *
+ */
 
 // Use plot as a wrapper to private class _Plot2D.
 Plot2D plot(List ydata, {List xdata: null, String style: 'data',
-  String color: 'black', int range: 1, int index: 1, bool large: true}) {
+  String color: 'black', int range: 1, int index: 1, bool large: true,
+  String container: '#graph'}) {
   final gphSize = 600;
   final border = 100;
-  int width = gphSize;
-  int scalePlot = large ? 2 : range;
-  int height = range == 1 ? gphSize : (gphSize * 1.5 / scalePlot).toInt();
-  var graphContainer = query('#graph');
+  final width = gphSize;
+  final scalePlot = large ? 2 : range;
+  final height = range == 1 ? gphSize : (gphSize * 1.5 / scalePlot).toInt();
+  var graphContainer = query(container);
   CanvasElement plotCanvas = new CanvasElement();
     plotCanvas.attributes = ({
       "id": "plotCanvas$index",
       "class": "plotCanvas",
-      "width": width,
-      "height": height,
+      "width": "$width",
+      "height": "$height",
     });
   graphContainer.nodes.add(plotCanvas);
   CanvasRenderingContext2D context = plotCanvas.context2d;
@@ -177,7 +180,6 @@ class Plot2D {
       }
     }
 
-
     //Plot the data.
     context.strokeStyle = color;
     if (style == 'data') {
@@ -191,6 +193,18 @@ class Plot2D {
           ..moveTo(i.toInt(), height - borderT)
           ..lineTo(i.toInt(), height - borderT - (((ydata[j]) - ymin) / ystep * ydiv))
           ..stroke()
+          //sample points
+          ..beginPath()
+          ..arc(i.toInt(), height - borderT - (((ydata[j]) - ymin) / ystep * ydiv),
+              4, 0, 2 * PI, false)
+          ..closePath()
+          ..stroke();
+      }
+    } else if (style == 'points') {
+      context.lineWidth = 3;
+      for (var j = 0; j < xdata.length; j++) {
+        var i = borderL + (((xdata[j]) - xmin)/xstep * xdiv);
+        context
           //sample points
           ..beginPath()
           ..arc(i.toInt(), height - borderT - (((ydata[j]) - ymin) / ystep * ydiv),
@@ -294,7 +308,7 @@ class Plot2D {
 
   //Method for adding a date stamp.
   void date([bool short = false]) {
-    String dateTime = new DateTime().stamp(short);
+    String dateTime = new TimeStamp().stamp(short);
     context
       ..textAlign = 'right'
       ..font = '10pt Candara'
@@ -303,7 +317,7 @@ class Plot2D {
 
   //Method for saving a single plot as a PNG image.
   void save() {
-    window.open(context.canvas.toDataURL('image/png'), 'plotWindow');
+    window.open(context.canvas.toDataUrl('image/png'), 'plotWindow');
   }
 }
 
@@ -313,20 +327,20 @@ class Plot2D {
  * contains a PNG image of all the plots to allow for saving.            *
  *                                                                       *
  * ********************************************************************* */
-Window saveAll(List plots, {num scale: 1.0}) {
-  CanvasElement plotAllCanvas = new CanvasElement();
-  num width = plots[0].context.canvas.width * scale;
-  num height = plots[0].context.canvas.height * scale;
+WindowBase saveAll(List plots, {num scale: 1.0}) {
+  int width = (plots[0].context.canvas.width * scale).toInt();
+  int height = (plots[0].context.canvas.height * scale).toInt();
+  CanvasElement plotAllCanvas = new CanvasElement(width:width, height:height);
   final margin = 20;
   plotAllCanvas.attributes = ({
     "id": "plotAllCanvas",
     "class": "plotAllCanvas",
-    "width": width,
-    "height": plots.length * (height + margin),
+    "width": "$width",
+    "height": "${plots.length * (height + margin)}",
   });
   CanvasRenderingContext2D contextAll = plotAllCanvas.context2d;
   for (var i = 0; i < plots.length; i++) {
-    contextAll.drawImage(plots[i].context.canvas, 0, i * (height + margin), width, height);
+    contextAll.drawImage(plots[i].context.canvas, 0, i * (height + margin));
   }
-  return window.open(contextAll.canvas.toDataURL('image/png'), 'plotAllWindow');
+  return window.open(contextAll.canvas.toDataUrl('image/png'), 'plotAllWindow');
 }

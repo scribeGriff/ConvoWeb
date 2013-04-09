@@ -1,12 +1,11 @@
 name: convoweb
-description: A Signal Processing Web Application for Dart
 version: 0.0.1
 author: Richard Griffith <scribe.griff@gmail.com>
+description: A Signal Processing Web Application for Dart
 homepage: http://www.scribegriff.com
 dependencies:
-  unittest:
-    sdk: unittest
-  meta:
-    sdk: meta
   convolab:
     git: git://github.com/scribeGriff/ConvoLab.git
+  unittest: any
+  browser: any
+  meta: any

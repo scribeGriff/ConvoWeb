@@ -9,8 +9,10 @@ library convoweb;
 import 'package:convolab/convolab.dart';
 
 import 'dart:html';
-import 'dart:json';
+import 'dart:json' as json;
 import 'dart:math';
+import 'dart:async';
+import 'dart:collection';
 
 part 'src/utilities/axis_config_results.dart';
 part 'src/utilities/date_time.dart';

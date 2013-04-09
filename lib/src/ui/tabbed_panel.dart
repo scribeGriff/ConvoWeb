@@ -1,17 +1,19 @@
+// Copyright (c) 2013, scribeGriff (Richard Griffith)
+// https://github.com/scribeGriff/ConvoWeb
+// All rights reserved.  Please see the LICENSE.md file.
+
 part of convoweb;
 
-/* ********************************************************************* *
- *   Class TabbedPanel()                                                 *
- *   Library: ConvoWeb (c) 2012 scribeGriff                              *
- *   Create a container with two tabbed panels                           *
- *   Usage:                                                              *
- *     String tabOne = 'myTabOne';                                       *
- *     String tabTwo = 'myTabTwo';                                       *
- *     var tabContainer = query('#myTabCont');                           *
- *     new TabbedPanel(tabContainer, tabOne, tabTwo);                    *
- *     var tabOneID = query('#tabOneCont');                              *
- *     var tabTwoID = query('#tabTwoCont');                              *
- * ********************************************************************* */
+/**
+ *   Class TabbedPanel creates a container with two tabbed panels
+ *   Usage:
+ *     String tabOne = 'myTabOne';
+ *     String tabTwo = 'myTabTwo';
+ *     var tabContainer = query('#myTabCont');
+ *     new TabbedPanel(tabContainer, tabOne, tabTwo);
+ *     var tabOneID = query('#tabOneCont');
+ *     var tabTwoID = query('#tabTwoCont');
+ */
 
 class TabbedPanel {
 
@@ -37,7 +39,7 @@ class TabbedPanel {
       "class": "tabbedPanelTab",
       "style": "display:block;"
     });
-    _tabOneFocus.innerHTML = tabOne;
+    _tabOneFocus.innerHtml = tabOne;
     container.nodes.add(_tabOneFocus);
 
     /***************************************************************
@@ -49,7 +51,7 @@ class TabbedPanel {
       "class": "tabbedPanelTab",
       "style": "display:none;"
     });
-    _tabOneReady.innerHTML = tabOne;
+    _tabOneReady.innerHtml = tabOne;
     container.nodes.add(_tabOneReady);
 
     /*****************************************************************
@@ -61,7 +63,7 @@ class TabbedPanel {
       "class": "tabbedPanelTab",
       "style": "display:none;"
     });
-    _tabTwoFocus.innerHTML = tabTwo;
+    _tabTwoFocus.innerHtml = tabTwo;
     container.nodes.add(_tabTwoFocus);
 
     /*****************************************************************
@@ -73,7 +75,7 @@ class TabbedPanel {
       "class": "tabbedPanelTab",
       "style": "display:block;"
     });
-    _tabTwoReady.innerHTML = tabTwo;
+    _tabTwoReady.innerHtml = tabTwo;
     container.nodes.add(_tabTwoReady);
 
     /****************************************************************
@@ -95,12 +97,12 @@ class TabbedPanel {
      * changeDisplay() which is passed a display list that control   *
      * the state of the tabbed panel.                                *
      *****************************************************************/
-    _tabOneReady.on.click.add((e) {
+    _tabOneReady.onClick.listen((e) {
       List _displayList = [_tabOneFocus,_tabTwoReady,_tabOneContent];
       _changeDisplay(_displayList);
     });
 
-    _tabTwoReady.on.click.add((e) {
+    _tabTwoReady.onClick.listen((e) {
       List _displayList = [_tabOneReady,_tabTwoFocus,_tabTwoContent];
       _changeDisplay(_displayList);
     });
@@ -129,5 +131,4 @@ class TabbedPanel {
       }
     }
   }
-
 }

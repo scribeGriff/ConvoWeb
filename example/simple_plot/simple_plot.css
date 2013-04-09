@@ -1,0 +1,61 @@
+body {
+  background-color: #F8F8F8;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 1.2em;
+  margin: 15px;
+}
+
+p {
+  color: #333;
+}
+
+#container {
+  width: 100%;
+  position: relative;
+  border: 1px solid #ccc;
+  background-color: #fff;
+}
+
+#text {
+  font-size: 20px;
+  line-height: 2em;
+  text-align: center;
+  margin-top: 140px;
+}
+
+#console {
+  display: block;
+}
+
+#status {
+  display: none;
+}
+
+#graph {
+  width: 700px;
+  padding-bottom: 50px;
+  border: 1px solid #ccc;
+  margin: 50px auto;
+}
+
+#plotCanvas1 {
+  margin-left: 50px;
+  margin-top: 50px;
+}
+
+#plotCanvas2 {
+  margin-left: 50px;
+  margin-top:50px;
+}
+
+#plotCanvas3 {
+  margin-left: 50px;
+  margin-top: 50px;
+}
+
+#plotCanvas4 {
+  margin-left: 50px;
+  margin-top: 50px;
+}

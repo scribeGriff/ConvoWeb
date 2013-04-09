@@ -1,20 +1,23 @@
+// Copyright (c) 2013, scribeGriff (Richard Griffith)
+// https://github.com/scribeGriff/ConvoWeb
+// All rights reserved.  Please see the LICENSE.md file.
+
 part of convoweb;
 
-/* ****************************************************** *
- *   DateTime class                                       *
+/**
+ *   A class for adding a time stamp.                     *
  *   Method stamp([bool short = false]) returns           *
- *   a string for use as a time stamp                     *
- *   Library: ConvoWeb (c) 2012 scribeGriff               *
- * ****************************************************** */
-class DateTime {
+ *   a string for use as a time stamp.                    *
+ */
 
-  HashMap months = new Map();
-  HashMap weekdays = new Map();
-  Date currentTime;
+class TimeStamp {
+
+  HashMap months = new HashMap();
+  HashMap weekdays = new HashMap();
+  DateTime currentTime = new DateTime.now();
   int year, month, day, hour, minute, weekday;
 
-  DateTime()
-      : currentTime = new Date.now() {
+  TimeStamp() {
     year = currentTime.year;
     month = currentTime.month;
     day = currentTime.day;
@@ -45,21 +48,21 @@ class DateTime {
   }
 
   String stamp([bool short = false]) {
-    String dateTime;
+    String timeStamp;
     String meridian;
     String minutes = minute < 10 ? '0$minute' : '$minute';
 
-    if (hour > 12) {
-      hour -= 12;
+    if (hour >= 12) {
+      if (hour > 12) hour -= 12;
       meridian = 'pm';
     } else {
       meridian = 'am';
     }
 
     if (short) {
-      return dateTime = '$hour:$minutes$meridian $month/$day/$year';
+      return timeStamp = '$hour:$minutes$meridian $month/$day/$year';
     } else {
-      return dateTime = '$hour:$minutes$meridian ${weekdays[weekday]} '
+      return timeStamp = '$hour:$minutes$meridian ${weekdays[weekday]} '
           '$day-${months[month]}-$year';
     }
   }
