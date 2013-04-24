@@ -1,8 +1,10 @@
-/* *********************************************************** *
- *   ConvoWeb: A signal processing web application in Dart     *
- *   https://github.com/scribeGriff/ConvoWeb                   *
- *   Library: ConvoWeb (c) 2012 scribeGriff                    *
- * *********************************************************** */
+// Copyright (c) 2013, scribeGriff (Richard Griffith)
+// https://github.com/scribeGriff/ConvoWeb
+// All rights reserved.  Please see the LICENSE.md file.
+
+/**
+ *  Client side library for use with ConvoLab.
+ */
 
 library convoweb;
 

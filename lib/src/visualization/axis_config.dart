@@ -1,8 +1,11 @@
+// Copyright (c) 2013, scribeGriff (Richard Griffith)
+// https://github.com/scribeGriff/ConvoWeb
+// All rights reserved.  Please see the LICENSE.md file.
+
 part of convoweb;
 
 /**
- *  Calculate optimum tick, min and max
- *  Library: ConvoWeb (c) 2012 scribeGriff
+ *  Calculate optimum tick, min and max for a plot.
  *  To configure an axis:
  *  AxisConfigResults axisCfg = new AxisConfig().axes(data);
  *  create a canvas element to draw to

@@ -11,11 +11,17 @@ void main() {
   var xval = xydata.map((x) => x.elementAt(0)).toList();
   var yval = xydata.map((y) => y.elementAt(1)).toList();
   // Plot data as an xy plot of points.
-  var scatter = plot(yval, xdata:xval, style:'points', color:'blue');
+  var scatter = plot(yval, xdata:xval, style:'points', color:'red');
   scatter.grid();
   scatter.xlabel('sample x data');
   scatter.ylabel('sample y data');
   scatter.title('Example of Scatter Plot');
   scatter.date();
+  List plots = new List();
+  plots.add(scatter);
+  plots.add(scatter);
+  plots.add(scatter);
+  plots.add(scatter);
+  WindowBase myPlotWindow = saveAll(plots);
 }
 

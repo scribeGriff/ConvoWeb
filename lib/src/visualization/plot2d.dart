@@ -5,14 +5,15 @@
 part of convoweb;
 
 /**
- * Class Plot2D plots data with canvas element in 2D
+ * A simple, 2D plotting class for plotting data to an HTML canvas.
  * If xdata not specified, a vector is generated equivalent
  * to the size of ydata in units from 1 to ydata.length.
  * Current styles supported:
- * *data (default),
- * *points,
- * *line,
+ * *data (default)
+ * *points
+ * *line
  * *linpts (line with points)
+ *
  * Variable r is the range which specifies how many subplots (1 - 4).
  * Variable i is the index of the subplot (1 - 4).
  * Supported methods are:
@@ -31,12 +32,18 @@ part of convoweb;
  *     p1.date();
  *     p1.save();
  *
+ * Includes a top level function, saveAll() for saving a group of subplots.
  */
 
 // Use plot as a wrapper to private class _Plot2D.
-Plot2D plot(List ydata, {List xdata: null, String style: 'data',
-  String color: 'black', int range: 1, int index: 1, bool large: true,
-  String container: '#graph'}) {
+Plot2D plot(List ydata, {
+    List xdata: null,
+    String style: 'data',
+    String color: 'black',
+    int range: 1,
+    int index: 1,
+    bool large: true,
+    String container: '#graph'}) {
   final gphSize = 600;
   final border = 100;
   final width = gphSize;
@@ -44,12 +51,12 @@ Plot2D plot(List ydata, {List xdata: null, String style: 'data',
   final height = range == 1 ? gphSize : (gphSize * 1.5 / scalePlot).toInt();
   var graphContainer = query(container);
   CanvasElement plotCanvas = new CanvasElement();
-    plotCanvas.attributes = ({
-      "id": "plotCanvas$index",
-      "class": "plotCanvas",
-      "width": "$width",
-      "height": "$height",
-    });
+  plotCanvas.attributes = ({
+    "id": "plotCanvas$index",
+    "class": "plotCanvas",
+    "width": "$width",
+    "height": "$height",
+  });
   graphContainer.nodes.add(plotCanvas);
   CanvasRenderingContext2D context = plotCanvas.context2d;
   context.fillStyle = 'white';
@@ -88,6 +95,11 @@ class Plot2D {
         index = 0 {
 
     num tickPt;
+
+    // Need to find min and max of each data list and then
+    // select the minimum min and maximum max to pass to the axis
+    // configuration algorithm.
+    // Also, have to decide how to handle ydata lists of differing lengths.
 
     //Compute optimum divisions of axes.
     xAxisCfg = new AxisConfig().axes(xdata, width - border);
@@ -266,10 +278,11 @@ class Plot2D {
   }
 
   //Method for adding a label to the x axis.
-  void xlabel(String xlabelName, [String labelColor = 'rgb(85, 98, 112)']) {
+  void xlabel(String xlabelName, {String color:'rgb(85, 98, 112)',
+      String font:'12pt Candara'}) {
     context
-      ..strokeStyle = labelColor
-      ..font = '12pt Candara'
+      ..strokeStyle = color
+      ..font = font
       ..textAlign = 'center'
       ..fillText(xlabelName, ((width  + (2 * borderL) - border)/ 2),
           height - borderT / 10);
@@ -280,14 +293,15 @@ class Plot2D {
   //relative to the size of the tick labels.  If they take up too much
   //room (ie, numbers like 1.20e+12), then may need to place the y axis
   //label above the tick marks (ie, upper left corner).
-  void ylabel(String ylabelName, [String labelColor = 'rgb(85, 98, 112)']) {
+  void ylabel(String ylabelName, {String color:'rgb(85, 98, 112)',
+      String font:'12pt Candara'}) {
     var
       lblWidth = context.measureText(ylabelName),
       deltax = borderL / 4,
       deltay = height / 2;
     context
-      ..strokeStyle = labelColor
-      ..font = '12pt Candara'
+      ..strokeStyle = color
+      ..font = font
       ..textAlign = 'center'
       ..save()
       ..translate(deltax, deltay)
@@ -298,11 +312,12 @@ class Plot2D {
   }
 
   //Method for adding a title.
-  void title(String title, [String titleColor = 'rgb(85, 98, 112)']) {
+  void title(String title, {String color:'rgb(85, 98, 112)',
+      String font:'16pt Candara'}) {
     context
-      ..strokeStyle = titleColor
+      ..strokeStyle = color
       ..textAlign = 'center'
-      ..font = '16pt Candara'
+      ..font = font
       ..fillText(title, ((width  + (2 * borderL) - border)/ 2), borderT / 2);
   }
 
@@ -321,26 +336,39 @@ class Plot2D {
   }
 }
 
-/*********************************************************************** *
- * Function saveAll(List plots) create a new canvas and adds all         *
- * the plot canvas from the list.  It then creates a new window which    *
- * contains a PNG image of all the plots to allow for saving.            *
- *                                                                       *
- * ********************************************************************* */
-WindowBase saveAll(List plots, {num scale: 1.0}) {
-  int width = (plots[0].context.canvas.width * scale).toInt();
-  int height = (plots[0].context.canvas.height * scale).toInt();
-  CanvasElement plotAllCanvas = new CanvasElement(width:width, height:height);
+/**
+ * Function saveAll(List plots) create a new canvas and adds all
+ * the plot canvas from the list.  It then creates a new window which
+ * contains a PNG image of all the plots to allow for saving.
+ *
+ */
+WindowBase saveAll(List plots, {num scale: 1.0, bool quad: true}) {
+  // Set a fixed border around each plot.
   final margin = 20;
+  final width = (plots[0].context.canvas.width * scale).toInt();
+  final height = (plots[0].context.canvas.height * scale).toInt();
+  final widthAll = quad ? 2 * (width + margin) : width;
+  final heightAll = quad ? (plots.length / 2).ceil() * (height + margin) :
+      plots.length * (height + margin);
+  CanvasElement plotAllCanvas = new CanvasElement(width:width, height:height);
+
+  // Set the attributes of the canvas element based on all plot sizes.
   plotAllCanvas.attributes = ({
     "id": "plotAllCanvas",
     "class": "plotAllCanvas",
-    "width": "$width",
-    "height": "${plots.length * (height + margin)}",
+    "width": "$widthAll",
+    "height": "$heightAll"
   });
   CanvasRenderingContext2D contextAll = plotAllCanvas.context2d;
-  for (var i = 0; i < plots.length; i++) {
-    contextAll.drawImage(plots[i].context.canvas, 0, i * (height + margin));
+  if (quad) {
+    for (var i = 0; i < plots.length; i++) {
+      contextAll.drawImage(plots[i].context.canvas, (i % 2) * (width + margin),
+          (i / 2).floor() * (height + margin));
+    }
+  } else {
+    for (var i = 0; i < plots.length; i++) {
+      contextAll.drawImage(plots[i].context.canvas, 0, i * (height + margin));
+    }
   }
   return window.open(contextAll.canvas.toDataUrl('image/png'), 'plotAllWindow');
 }

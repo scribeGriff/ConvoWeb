@@ -5,9 +5,9 @@
 part of convoweb;
 
 /**
- *   A class for adding a time stamp.                     *
- *   Method stamp([bool short = false]) returns           *
- *   a string for use as a time stamp.                    *
+ * A class for adding a time stamp.
+ * Method stamp([bool short = false]) returns
+ * a string for use as a time stamp.
  */
 
 class TimeStamp {
