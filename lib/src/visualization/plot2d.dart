@@ -29,30 +29,56 @@ part of convoweb;
  *     title(String title, [String titleColor]),
  *     date([bool short])
  *     legend()
- *     xmarker(num xval)
+ *     xmarker(num xval, [bool annotate])
  *     save()
  *
- * Usage (given a List of numbers called real):
- *     var p1 = plot(real);
- *     p1.grid();
- *     p1.xlabel('Samples (n)');
- *     p1.ylabel('data');
- *     p1.title('Example of Plotting Sampled Data');
- *     p1.date();
- *     p1.legend(y1:'3x + 2', y2:'sin(2x)');
- *     p1.xmarker(xval);
- *     p1.save();
+ * Usage (given up to four Lists of type num - ie, myData1, myData2):
+ *     var p1 = plot(myData1, y2:myData2);
+ *     p1
+ *       ..grid();
+ *       ..xlabel('Samples (n)');
+ *       ..ylabel('data');
+ *       ..title('Example of Plotting Sampled Data');
+ *       ..date();
+ *       ..legend(y1:'3x + 2', y2:'sin(2x)');
+ *       ..xmarker(xval, true);
+ *       ..save();
  *
  * Includes a top level function, saveAll() for saving a group of subplots.
  */
 
-// Use plot as a wrapper to class Plot2D.
+/**
+ * Top level function plot() returns an instance of the Plot2D class.
+ *
+ * Only one parameter is required - a List representing the data to be plotted.
+ *
+ * Provides a number of named optional parameters:
+ * *xdata: by default, the x axis is simply defined as the number of data
+ *  points in y1, but the axis data points can be specified by providing a
+ *  List for xdata.  All plots are plotted against this single x axis.
+ * *y2 - y4: List representing additional data to be plotted on same axes.
+ * *style: The default style is data, which plots the data as points with
+ *  a line to the x axis.  Supported optional styles include points, curve,
+ *  curvepts, line, linepts.
+ * *color1 - color4: Sets the color for each set of data.
+ * *range: The number of subplots.  Default is 1.
+ * *index: Which subplot is currently being drawn.
+ * *large: Default is true, but by setting this boolean value to false, will
+ *  shrink the drawn size.
+ * *container: The id of the container for the plots.  Default is #simPlotQuad.
+ *
+ * All plots are assigned a unique id of simPlot$index (ie, #simPlot1) and a
+ * common class of simPlot (ie, .simPlot).
+ */
 Plot2D plot(List y1, {
     List xdata: null,
     List y2: null,
     List y3: null,
     List y4: null,
-    String style: 'data',
+    String style1: 'data',
+    String style2: null,
+    String style3: null,
+    String style4: null,
     String color1: 'black',
     String color2: 'green',
     String color3: 'blue',
@@ -60,7 +86,7 @@ Plot2D plot(List y1, {
     int range: 1,
     int index: 1,
     bool large: true,
-    String container: '#graph'}) {
+    String container: '#simPlotQuad'}) {
   final int _gphSize = 600;
   final int _border = 80;
   final int _pwidth = _gphSize;
@@ -69,8 +95,8 @@ Plot2D plot(List y1, {
   var graphContainer = query(container);
   var _plotCanvas = new CanvasElement();
   _plotCanvas.attributes = ({
-    "id": "plotCanvas$index",
-    "class": "plotCanvas",
+    "id": "simPlot$index",
+    "class": "simPlot",
     "width": "$_pwidth",
     "height": "$_pheight",
   });
@@ -85,13 +111,25 @@ Plot2D plot(List y1, {
   if (xdata == null) {
     xdata = new List.generate(y1.length, (var index) =>
         index + 1, growable:false);
+  } else if (style1 == 'data') {
+    xdata = new List.generate(y1.length, (var index) =>
+        index + xdata[0], growable:false);
   }
+
   //Build a HashMap of the all the y axis data.
   var _ydata = new LinkedHashMap();
   _ydata["y1"] = y1;
   _ydata["y2"] = y2;
   _ydata["y3"] = y3;
   _ydata["y4"] = y4;
+
+  //Build a HashMap of the all the y axis data.
+  var _style = new LinkedHashMap();
+  _style["y1"] = style1;
+  _style["y2"] = style2 == null ? style1 : style2;
+  _style["y3"] = style3 == null ? style1 : style3;
+  _style["y4"] = style4 == null ? style1 : style4;
+
   //Build a HashMap of the corresponding colors for the plots.
   var _color = new LinkedHashMap();
   _color["y1"] = color1;
@@ -100,10 +138,12 @@ Plot2D plot(List y1, {
   _color["y4"] = color4;
 
   //Return the Plot2D object.
-  return new Plot2D(_context, _ydata, xdata, _color, style, _pwidth, _pheight);
+  return new Plot2D(_context, _ydata, xdata, _color, _style, _pwidth, _pheight);
 }
 
-//Plot2D class configures the axes and plots the data.
+/**
+ * Configures the axes and draws the data to the canvas.
+ */
 class Plot2D {
   _AxisConfigResults _yAxisCfg;
   _AxisConfigResults _xAxisCfg;
@@ -115,9 +155,9 @@ class Plot2D {
   final _index = 0;
 
   final CanvasRenderingContext2D _context;
-  final LinkedHashMap _ydata, _color;
+  final LinkedHashMap _ydata, _color, _style;
   final List _xdata;
-  final String _style;
+  //final String _style;
   final num _pwidth, _pheight;
   num _xmin, _xmax, _xdiv, _xstep;
   num _ymin, _ymax, _ydiv, _ystep;
@@ -197,16 +237,19 @@ class Plot2D {
       ..textAlign = 'center'
       ..font = '10pt Consolas';
     _tickPt = _xmin;
-    if (_xstep == _xstep.toInt()) {
+    //if (_xstep == _xstep.toInt()) {
+    if (_increment == _increment.toInt()) {
       for (var j = _xmin; j <= _xmax; j += _increment) {
         _context.fillText(j.toInt().toString(), _borderL + ((j - _xmin)/_increment)
             * _offset, _pheight - _borderT + (_borderT / 3));
         _tickPt += _increment;
       }
     } else {
-      // Need test cases for exponent, precision, fixed number labels.
+      // TODO: exponent, precision, fixed number labels.
+      var numDigits = 2;
+      if (_xmax < 0.01) numDigits = 3;
       for (var j = _xmin; j <= _xmax; j += _increment) {
-        _context.fillText(j.toString(), _borderL + ((j - _xmin)/_increment) * _offset,
+        _context.fillText(j.toStringAsFixed(numDigits), _borderL + ((j - _xmin)/_increment) * _offset,
             _pheight - _borderT + (_borderT / 3));
         _tickPt += _increment;
       }
@@ -255,18 +298,18 @@ class Plot2D {
         } else {
           _dataLength = _ydata[waveform].length;
         }
-        if (_style == 'data') {
+        if (_style[waveform] == 'data') {
           _context.lineWidth = 2;
           _drawData(_color[waveform], _ydata[waveform]);
-        } else if (_style == 'points') {
+        } else if (_style[waveform] == 'points') {
           _context.lineWidth = 3;
           _drawPoints(_color[waveform], _ydata[waveform]);
-        } else if (_style == 'curve' || _style == 'curvepts') {
+        } else if (_style[waveform] == 'curve' || _style[waveform] == 'curvepts') {
           _context.lineWidth = 4;
-          _drawCurve(_color[waveform], _ydata[waveform]);
-        } else if (_style == 'line' || _style == 'linepts') {
+          _drawCurve(_color[waveform], _ydata[waveform], _style[waveform]);
+        } else if (_style[waveform] == 'line' || _style[waveform] == 'linepts') {
           _context.lineWidth = 3;
-          _drawLine(_color[waveform], _ydata[waveform]);
+          _drawLine(_color[waveform], _ydata[waveform], _style[waveform]);
         }
       }
     }
@@ -308,7 +351,7 @@ class Plot2D {
   }
 
   // Drawing the curve plots - style = 'curve' or 'curvepts'.
-  void _drawCurve(var dataColor, var yvals) {
+  void _drawCurve(var dataColor, var yvals, var style) {
     var a, b, c, d;
     _context
       ..strokeStyle = dataColor
@@ -335,7 +378,7 @@ class Plot2D {
       ..quadraticCurveTo(a, c, b, d)
       ..stroke();
 
-    if (_style == 'curvepts') {
+    if (style == 'curvepts') {
       //Add sample points.
       _context.fillStyle = dataColor;
       for (var j = 0; j < _dataLength; j++) {
@@ -351,7 +394,7 @@ class Plot2D {
   }
 
   // Drawing the line plots - style = 'line' or 'linepts'.
-  void _drawLine(var dataColor, var yvals) {
+  void _drawLine(var dataColor, var yvals, var style) {
     //Add sample data.
     _context
     ..strokeStyle = dataColor
@@ -365,7 +408,7 @@ class Plot2D {
         ..lineTo(i.toInt(), _pheight - _borderT - (((yvals[j]) - _ymin) / _ystep * _ydiv))
         ..stroke();
     }
-    if (_style == 'linepts') {
+    if (style == 'linepts') {
       //Add sample points.
       _context.fillStyle = dataColor;
       for (var j = 0; j < _dataLength; j++) {
@@ -524,27 +567,28 @@ class Plot2D {
    *     myPlot.legend(y1:'y = 3x - 2', y2:'cosh(x)');
    *
    */
-  void legend({String y1: 'y1', String y2: 'y2', String y3: 'y3',
-      String y4: 'y4'}) {
+  void legend({String l1: 'y1', String l2: 'y2', String l3: 'y3',
+      String l4: 'y4', bool top: true}) {
     _context
       ..font = "italic bold 14px consolas"
       ..textAlign = 'left';
     LinkedHashMap llabel = new LinkedHashMap();
-    llabel["y1"] = y1;
-    llabel["y2"] = y2;
-    llabel["y3"] = y3;
-    llabel["y4"] = y4;
-    var _yWidths = [_context.measureText(y1).width,
-                    _context.measureText(y2).width,
-                    _context.measureText(y3).width,
-                    _context.measureText(y4).width];
+    llabel["y1"] = l1;
+    llabel["y2"] = l2;
+    llabel["y3"] = l3;
+    llabel["y4"] = l4;
+    var _yWidths = [_context.measureText(l1).width,
+                    _context.measureText(l2).width,
+                    _context.measureText(l3).width,
+                    _context.measureText(l4).width];
     var
       _legendWidth = 20 + _yWidths.fold(_yWidths.first, max),
       _legendHeight = 20 + (_yWithData * _pheight) ~/ (8 * _ydata.length),
       _legendBorder = 10,
       _legendX = _pwidth + _borderL - _border - _legendWidth - _legendBorder,
-      _legendY = _borderT + _legendBorder,
-      _yOffset = (_legendHeight - 20) ~/ _yWithData;
+      _legendY = top == true ? _borderT + _legendBorder : _pheight - _legendBorder - _legendHeight - _borderT,
+      //_legendY = _borderT + _legendBorder,
+      _yOffset = (_legendHeight - 15) ~/ _yWithData;
     _context
       ..fillStyle = 'white'
       ..fillRect(_legendX, _legendY, _legendWidth, _legendHeight)
@@ -665,7 +709,7 @@ class Plot2D {
  *     allPlots.add(myScatter);
  *
  *     var myLines = plot(yval, y2:xval, y3:yShort, style:'linepts', range:2,
- *         index:2, container:"#quad");
+ *         index:2, container:"#myContainer");
  *     myLines
  *       ..grid()
  *       ..xlabel('Samples (n)')
@@ -692,8 +736,8 @@ WindowBase saveAll(List plots, {num scale: 1.0, bool quad: true}) {
 
   // Set the attributes of the canvas element based on all plot sizes.
   _plotAllCanvas.attributes = ({
-    "id": "plotAllCanvas",
-    "class": "plotAllCanvas",
+    "id": "simPlotAllCanvas",
+    "class": "simPlotAll",
     "width": "$_widthAll",
     "height": "$_heightAll"
   });
