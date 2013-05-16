@@ -32,22 +32,8 @@ part of convoweb;
  *     xmarker(num xval, [bool annotate])
  *     save()
  *
- * Usage (given up to four Lists of type num - ie, myData1, myData2):
- *     var p1 = plot(myData1, y2:myData2);
- *     p1
- *       ..grid();
- *       ..xlabel('Samples (n)');
- *       ..ylabel('data');
- *       ..title('Example of Plotting Sampled Data');
- *       ..date();
- *       ..legend(y1:'3x + 2', y2:'sin(2x)');
- *       ..xmarker(xval, true);
- *       ..save();
+ * There is also a top level function, saveAll(), for saving a group of subplots.
  *
- * Includes a top level function, saveAll() for saving a group of subplots.
- */
-
-/**
  * Top level function plot() returns an instance of the Plot2D class.
  *
  * Only one parameter is required - a List representing the data to be plotted.
@@ -69,13 +55,33 @@ part of convoweb;
  *
  * All plots are assigned a unique id of simPlot$index (ie, #simPlot1) and a
  * common class of simPlot (ie, .simPlot).
+ *
+ * Usage (given up to four Lists of type num - ie, myData1, myData2):
+ *
+ *     import 'package:simplot/simplot.dart';
+ *
+ *     void main() {
+ *       var myData1 = [  ....  ];
+ *       var myData2 = [  ....  ];
+ *       var myPlot = plot(myData1, y2:myData2);
+ *       myPlot
+ *         ..grid();
+ *         ..xlabel('Samples (n)');
+ *         ..ylabel('data');
+ *         ..title('Example of Plotting Sampled Data');
+ *         ..date();
+ *         ..legend(l1:'3x + 2', l2:'sin(2x)');
+ *         ..xmarker(xval, true);
+ *         ..save();
+ *
  */
+
 Plot2D plot(List y1, {
     List xdata: null,
     List y2: null,
     List y3: null,
     List y4: null,
-    String style1: 'data',
+    String style1: 'linepts',
     String style2: null,
     String style3: null,
     String style4: null,
@@ -123,7 +129,7 @@ Plot2D plot(List y1, {
   _ydata["y3"] = y3;
   _ydata["y4"] = y4;
 
-  //Build a HashMap of the all the y axis data.
+  //Build a HashMap of the all the plot style for each data set.
   var _style = new LinkedHashMap();
   _style["y1"] = style1;
   _style["y2"] = style2 == null ? style1 : style2;
@@ -572,22 +578,22 @@ class Plot2D {
     _context
       ..font = "italic bold 14px consolas"
       ..textAlign = 'left';
-    LinkedHashMap llabel = new LinkedHashMap();
-    llabel["y1"] = l1;
-    llabel["y2"] = l2;
-    llabel["y3"] = l3;
-    llabel["y4"] = l4;
-    var _yWidths = [_context.measureText(l1).width,
-                    _context.measureText(l2).width,
-                    _context.measureText(l3).width,
-                    _context.measureText(l4).width];
+    var llabel = new LinkedHashMap();
+    llabel["y1"] = _ydata["y1"] != null ? l1 : '';
+    llabel["y2"] = _ydata["y2"] != null ? l2 : '';
+    llabel["y3"] = _ydata["y3"] != null ? l3 : '';
+    llabel["y4"] = _ydata["y4"] != null ? l4 : '';
+    var _yWidths = [_context.measureText(llabel["y1"]).width,
+                    _context.measureText(llabel["y2"]).width,
+                    _context.measureText(llabel["y3"]).width,
+                    _context.measureText(llabel["y4"]).width];
     var
       _legendWidth = 20 + _yWidths.fold(_yWidths.first, max),
       _legendHeight = 20 + (_yWithData * _pheight) ~/ (8 * _ydata.length),
       _legendBorder = 10,
       _legendX = _pwidth + _borderL - _border - _legendWidth - _legendBorder,
-      _legendY = top == true ? _borderT + _legendBorder : _pheight - _legendBorder - _legendHeight - _borderT,
-      //_legendY = _borderT + _legendBorder,
+      _legendY = top == true ? _borderT + _legendBorder
+          : _pheight - _legendBorder - _legendHeight - _borderT,
       _yOffset = (_legendHeight - 15) ~/ _yWithData;
     _context
       ..fillStyle = 'white'

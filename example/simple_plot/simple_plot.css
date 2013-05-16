@@ -14,6 +14,7 @@ p {
   position: relative;
   border: 1px solid #ccc;
   background-color: #fff;
+  overflow:hidden;
 }
 #text {
   font-size: 20px;
@@ -27,12 +28,27 @@ p {
 #status {
   display: none;
 }
-#graph {
+#simPlotGraph {
+  display:none;
   width: 700px;
   padding-bottom: 50px;
   border: 1px solid #ccc;
   margin: 50px auto;
 }
+#simPlotQuad {
+  width: 1400px;
+  padding-bottom: 50px;
+  border: 1px solid red;
+  margin: 50px auto;
+  overflow:hidden;
+}
+/*#quad #plotCanvas1 {
+  float: left;
+}
+#quad #plotCanvas2 {
+  float: left;
+}
+
 #plotCanvas1 {
   margin-left: 50px;
   margin-top: 50px;
@@ -48,4 +64,9 @@ p {
 #plotCanvas4 {
   margin-left: 50px;
   margin-top: 50px;
+}*/
+.simPlot {
+  margin: 30px;
+  float: left;
 }
+
