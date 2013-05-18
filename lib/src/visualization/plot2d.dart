@@ -30,6 +30,7 @@ part of convoweb;
  *     date([bool short])
  *     legend()
  *     xmarker(num xval, [bool annotate])
+ *     ymarker(num yval)
  *     save()
  *
  * There is also a top level function, saveAll(), for saving a group of subplots.
@@ -72,6 +73,7 @@ part of convoweb;
  *         ..date();
  *         ..legend(l1:'3x + 2', l2:'sin(2x)');
  *         ..xmarker(xval, true);
+ *         ..ymarker(yval);
  *         ..save();
  *
  */
@@ -89,6 +91,7 @@ Plot2D plot(List y1, {
     String color2: 'green',
     String color3: 'blue',
     String color4: 'red',
+    int linewidth: 2,
     int range: 1,
     int index: 1,
     bool large: true,
@@ -144,7 +147,8 @@ Plot2D plot(List y1, {
   _color["y4"] = color4;
 
   //Return the Plot2D object.
-  return new Plot2D(_context, _ydata, xdata, _color, _style, _pwidth, _pheight);
+  return new Plot2D(_context, _ydata, xdata, _color, _style, _pwidth, _pheight,
+      linewidth);
 }
 
 /**
@@ -163,15 +167,15 @@ class Plot2D {
   final CanvasRenderingContext2D _context;
   final LinkedHashMap _ydata, _color, _style;
   final List _xdata;
-  //final String _style;
   final num _pwidth, _pheight;
+  final int _linewidth;
   num _xmin, _xmax, _xdiv, _xstep;
   num _ymin, _ymax, _ydiv, _ystep;
   var _dataLength;
   var _yWithData = 0;
 
   Plot2D(this._context, this._ydata, this._xdata, this._color, this._style,
-      this._pwidth, this._pheight) {
+      this._pwidth, this._pheight, this._linewidth) {
 
     var _tickPt;
     var _first = true;
@@ -305,16 +309,16 @@ class Plot2D {
           _dataLength = _ydata[waveform].length;
         }
         if (_style[waveform] == 'data') {
-          _context.lineWidth = 2;
+          _context.lineWidth = _linewidth;
           _drawData(_color[waveform], _ydata[waveform]);
         } else if (_style[waveform] == 'points') {
-          _context.lineWidth = 3;
+          _context.lineWidth = _linewidth;
           _drawPoints(_color[waveform], _ydata[waveform]);
         } else if (_style[waveform] == 'curve' || _style[waveform] == 'curvepts') {
-          _context.lineWidth = 4;
+          _context.lineWidth = _linewidth;
           _drawCurve(_color[waveform], _ydata[waveform], _style[waveform]);
         } else if (_style[waveform] == 'line' || _style[waveform] == 'linepts') {
-          _context.lineWidth = 3;
+          _context.lineWidth = _linewidth;
           _drawLine(_color[waveform], _ydata[waveform], _style[waveform]);
         }
       }
@@ -617,27 +621,28 @@ class Plot2D {
    * Adds a marker to the x axis of the current plot at position x = xval.
    *
    * The method requires an x value to be provided.  If the value of x specified
-   * is not a data point (ie, indexOf(xval) returns -1), the marker is not added
-   * (ie, the marker x position is not interpolated between data points).
+   * is not a data point (ie, indexOf(xval) returns -1) and the optional
+   * annotation variable is set to true, the data will not be displayed (ie,
+   * the marker x position is not interpolated between data points).
    *
-   * An optional boolean variable indicates if the marker points corresponding
-   * to y axis values should be annotating on the plot.  This parameter is
-   * disabled by default.
+   * The color and size of the marker can also be specified.
    *
    * Usage:
    *     var myPlot = plot(data);
    *     myPlot.xmarker(data[4], true);
    */
-  void xmarker(num xval, [bool annotate = false]) {
+  void xmarker(num xval, {bool annotate:false, String color:'rgb(85, 98, 112)',
+      var width:1}) {
+    var offset = (width % 2) / 2;
     var _xindex = _xdata.indexOf(xval);
     _context
       ..font = "italic bold 16px consolas"
       ..textAlign = 'left'
-      ..strokeStyle = 'rgb(85, 98, 112)'
-      ..lineWidth = 2
+      ..strokeStyle = color
+      ..lineWidth = width
       ..beginPath()
-      ..moveTo(_borderL + ((xval - _xmin) / _xstep * _xdiv), _pheight - _borderT)
-      ..lineTo(_borderL + ((xval - _xmin) / _xstep * _xdiv), _borderT)
+      ..moveTo(offset + (_borderL + ((xval - _xmin) / _xstep * _xdiv)).toInt(), _pheight - _borderT)
+      ..lineTo(offset + (_borderL + ((xval - _xmin) / _xstep * _xdiv)).toInt(), _borderT)
       ..stroke();
     if (annotate) {
       for (var waveform in _ydata.keys) {
@@ -679,6 +684,23 @@ class Plot2D {
         }
       }
     }
+  }
+  /**
+   * Adds a marker to the y axis of the current plot at position y = yval.
+   *
+   * Usage:
+   *     var myPlot = plot(data);
+   *     myPlot.ymarker(0);
+   */
+  void ymarker(num yval, {String color:'rgb(85, 98, 112)', var width:1}) {
+    var offset = (width % 2) / 2;
+    _context
+      ..strokeStyle = color
+      ..lineWidth = width
+      ..beginPath()
+      ..moveTo(_borderL, offset + (_pheight - _borderT - ((yval - _ymin) / _ystep * _ydiv)).toInt())
+      ..lineTo(_pwidth - (_border - _borderL), offset + (_pheight - _borderT - ((yval - _ymin) / _ystep * _ydiv)).toInt())
+      ..stroke();
   }
 
   /**
