@@ -40,7 +40,7 @@ void main() {
     //Plot the data using the plot() library function.
     for (var i = 0; i < keys.length; i++) {
       List waveform = data[keys[i]]["real"].sublist(0, 500);
-      plots[i] = plot(waveform, style: 'line', color: 'green',
+      plots[i] = plot(waveform, style1: 'line', color1: 'green',
           range: keys.length, index: i+1);
       plots[i]
         ..grid()
