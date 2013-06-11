@@ -11,12 +11,12 @@ part of convoweb;
  * to the size of the first ydata supplied in units from 1 to ydata.length.
  *
  * Current styles supported:
- * *data (default)
- * *points
- * *curve
- * *curvepts (curve with points)
- * *line
- * *linepts (line with points)
+ * * data
+ * * points
+ * * curve
+ * * curvepts
+ * * line
+ * * linepts (default)
  *
  * Variable r is the range which specifies how many subplots (1 - 4).
  * Variable i is the index of the subplot (1 - 4).
@@ -40,26 +40,26 @@ part of convoweb;
  * Only one parameter is required - a List representing the data to be plotted.
  *
  * Provides a number of named optional parameters:
- * *xdata: by default, the x axis is simply defined as the number of data
+ * * xdata: by default, the x axis is simply defined as the number of data
  *  points in y1, but the axis data points can be specified by providing a
  *  List for xdata.  All plots are plotted against this single x axis.
- * *y2 - y4: List representing additional data to be plotted on same axes.
- * *style: The default style is data, which plots the data as points with
+ * * y2 - y4: List representing additional data to be plotted on same axes.
+ * * style: The default style is data, which plots the data as points with
  *  a line to the x axis.  Supported optional styles include points, curve,
  *  curvepts, line, linepts.
- * *color1 - color4: Sets the color for each set of data.
- * *range: The number of subplots.  Default is 1.
- * *index: Which subplot is currently being drawn.
- * *large: Default is true, but by setting this boolean value to false, will
+ * * color1 - color4: Sets the color for each set of data.
+ * * range: The number of subplots.  Default is 1.
+ * * index: Which subplot is currently being drawn.
+ * * large: Default is true, but by setting this boolean value to false, will
  *  shrink the drawn size.
- * *container: The id of the container for the plots.  Default is #simPlotQuad.
+ * * container: The id of the container for the plots.  Default is #simPlotQuad.
  *
  * All plots are assigned a unique id of simPlot$index (ie, #simPlot1) and a
  * common class of simPlot (ie, .simPlot).
  *
  * Usage (given up to four Lists of type num - ie, myData1, myData2):
  *
- *     import 'package:simplot/simplot.dart';
+ *     import 'package:ConvoWeb/convoweb.dart';
  *
  *     void main() {
  *       var myData1 = [  ....  ];
@@ -88,14 +88,17 @@ Plot2D plot(List y1, {
     String style3: null,
     String style4: null,
     String color1: 'black',
-    String color2: 'green',
-    String color3: 'blue',
-    String color4: 'red',
+    String color2: 'ForestGreen',
+    String color3: 'Navy',
+    String color4: 'FireBrick',
     int linewidth: 2,
     int range: 1,
     int index: 1,
-    bool large: true,
     String container: '#simPlotQuad'}) {
+
+  if (y1 == null || y1.isEmpty) throw new ArgumentError("No data to be plotted.");
+
+  final bool large = true;
   final int _gphSize = 600;
   final int _border = 80;
   final int _pwidth = _gphSize;
@@ -110,16 +113,22 @@ Plot2D plot(List y1, {
     "height": "$_pheight",
   });
   graphContainer.nodes.add(_plotCanvas);
-  CanvasRenderingContext2D _context = _plotCanvas.context2d;
-  _context.fillStyle = 'white';
-  _context.fillRect(0, 0, _pwidth, _pheight);
-  _context.fillStyle = 'black';
+  CanvasRenderingContext2D context = _plotCanvas.context2D;
+  context
+    ..fillStyle = 'white'
+    ..fillRect(0, 0, _pwidth, _pheight)
+    ..fillStyle = 'black';
 
   //If no xdata was passed, create a row vector
   //based on the length of y1.
   if (xdata == null) {
-    xdata = new List.generate(y1.length, (var index) =>
-        index + 1, growable:false);
+    if (style1 == 'data') {
+      xdata = new List.generate(y1.length, (var index) =>
+          index + 1, growable:false);
+    } else {
+      xdata = new List.generate(y1.length, (var index) =>
+          index, growable:false);
+    }
   } else if (style1 == 'data') {
     xdata = new List.generate(y1.length, (var index) =>
         index + xdata[0], growable:false);
@@ -147,12 +156,16 @@ Plot2D plot(List y1, {
   _color["y4"] = color4;
 
   //Return the Plot2D object.
-  return new Plot2D(_context, _ydata, xdata, _color, _style, _pwidth, _pheight,
+  return new Plot2D(context, _ydata, xdata, _color, _style, _pwidth, _pheight,
       linewidth);
 }
 
 /**
  * Configures the axes and draws the data to the canvas.
+ *
+ * It is not recommended to instantiate this class directly, but rather through
+ * the top level function plot().
+ *
  */
 class Plot2D {
   _AxisConfigResults _yAxisCfg;
@@ -164,7 +177,7 @@ class Plot2D {
   final _tickSize = 5;
   final _index = 0;
 
-  final CanvasRenderingContext2D _context;
+  final CanvasRenderingContext2D context;
   final LinkedHashMap _ydata, _color, _style;
   final List _xdata;
   final num _pwidth, _pheight;
@@ -174,7 +187,7 @@ class Plot2D {
   var _dataLength;
   var _yWithData = 0;
 
-  Plot2D(this._context, this._ydata, this._xdata, this._color, this._style,
+  Plot2D(this.context, this._ydata, this._xdata, this._color, this._style,
       this._pwidth, this._pheight, this._linewidth) {
 
     var _tickPt;
@@ -222,15 +235,16 @@ class Plot2D {
       _increment = _style == 'data' ? 1 : _xstep;
 
     //Draw the graph outline.
-    _context
+    context
       ..strokeStyle = "rgb(85, 98, 112)"    //"#556270"
       ..lineCap = "round"
-      ..strokeRect(_borderL, _borderT, _pwidth - _border, _pheight - _border, 2)
+      ..lineWidth = 2
+      ..strokeRect(_borderL, _borderT, _pwidth - _border, _pheight - _border)
       ..lineWidth = 1;
 
     //Create tick marks on x axis.
     for (var i = _borderL + _offset; i < _pwidth - (_border - _borderL); i += _offset) {
-      _context
+      context
         //bottom ticks
         ..beginPath()
         ..moveTo(i.toInt() + 0.5, _pheight - _borderT)
@@ -243,14 +257,14 @@ class Plot2D {
     }
 
     //Add labels to the x axis tick marks.
-    _context
+    context
       ..textAlign = 'center'
       ..font = '10pt Consolas';
     _tickPt = _xmin;
     //if (_xstep == _xstep.toInt()) {
     if (_increment == _increment.toInt()) {
       for (var j = _xmin; j <= _xmax; j += _increment) {
-        _context.fillText(j.toInt().toString(), _borderL + ((j - _xmin)/_increment)
+        context.fillText(j.toInt().toString(), _borderL + ((j - _xmin)/_increment)
             * _offset, _pheight - _borderT + (_borderT / 3));
         _tickPt += _increment;
       }
@@ -259,7 +273,7 @@ class Plot2D {
       var numDigits = 2;
       if (_xmax < 0.01) numDigits = 3;
       for (var j = _xmin; j <= _xmax; j += _increment) {
-        _context.fillText(j.toStringAsFixed(numDigits), _borderL + ((j - _xmin)/_increment) * _offset,
+        context.fillText(j.toStringAsFixed(numDigits), _borderL + ((j - _xmin)/_increment) * _offset,
             _pheight - _borderT + (_borderT / 3));
         _tickPt += _increment;
       }
@@ -267,7 +281,7 @@ class Plot2D {
 
     //Create tick marks on y axis.
     for (var i = _pheight - _borderT - _ydiv; i > _borderT; i -= _ydiv) {
-      _context
+      context
         //left ticks
         ..moveTo(_borderL, i.toInt() + 0.5)
         ..lineTo(_borderL + _tickSize, i.toInt() + 0.5)
@@ -279,13 +293,13 @@ class Plot2D {
     }
 
     //Add labels to the y axis tics.
-    _context
+    context
       ..font = '10pt Consolas'
       ..textAlign = 'right';
     _tickPt = _ymin;
     if (_ystep == _ystep.toInt()) {
       for (var i = _pheight - _borderT; i > _borderT - _ydiv / 2; i -= _ydiv) {
-        _context.fillText(_tickPt.toInt().toString(), _borderL - _tickSize, i.toInt());
+        context.fillText(_tickPt.toInt().toString(), _borderL - _tickSize, i.toInt());
         _tickPt += _ystep;
       }
     } else {
@@ -293,7 +307,7 @@ class Plot2D {
       var numDigits = 2;
       if (_ymax < 0.01) numDigits = 3;
       for (var i = _pheight - _borderT; i > _borderT - _ydiv / 2; i -= _ydiv) {
-        _context.fillText(_tickPt.toStringAsFixed(numDigits), _borderL - _tickSize,
+        context.fillText(_tickPt.toStringAsFixed(numDigits), _borderL - _tickSize,
             i.toInt());
         _tickPt += _ystep;
       }
@@ -309,16 +323,16 @@ class Plot2D {
           _dataLength = _ydata[waveform].length;
         }
         if (_style[waveform] == 'data') {
-          _context.lineWidth = _linewidth;
+          context.lineWidth = _linewidth;
           _drawData(_color[waveform], _ydata[waveform]);
         } else if (_style[waveform] == 'points') {
-          _context.lineWidth = _linewidth;
+          context.lineWidth = _linewidth;
           _drawPoints(_color[waveform], _ydata[waveform]);
         } else if (_style[waveform] == 'curve' || _style[waveform] == 'curvepts') {
-          _context.lineWidth = _linewidth;
+          context.lineWidth = _linewidth;
           _drawCurve(_color[waveform], _ydata[waveform], _style[waveform]);
         } else if (_style[waveform] == 'line' || _style[waveform] == 'linepts') {
-          _context.lineWidth = _linewidth;
+          context.lineWidth = _linewidth;
           _drawLine(_color[waveform], _ydata[waveform], _style[waveform]);
         }
       }
@@ -329,10 +343,10 @@ class Plot2D {
   // Drawing the data plots - style = 'data'.
   void _drawData(var dataColor, var yvals) {
     //Add sample data and points.
-    _context.strokeStyle = dataColor;
+    context.strokeStyle = dataColor;
     for (var j = 0; j < _dataLength; j++) {
       var i = _borderL + (((_xdata[j]) - _xmin)/_xstep * _xdiv);
-      _context
+      context
         ..beginPath()
         ..moveTo(i.toInt(), _pheight - _borderT)
         ..lineTo(i.toInt(), _pheight - _borderT - (((yvals[j]) - _ymin) / _ystep * _ydiv))
@@ -348,10 +362,10 @@ class Plot2D {
   // Drawing the points plots - style = 'points'.
   void _drawPoints(var dataColor, var yvals) {
     //Add sample points.
-    _context.strokeStyle = dataColor;
+    context.strokeStyle = dataColor;
     for (var j = 0; j < _dataLength; j++) {
       var i = _borderL + (((_xdata[j]) - _xmin) / _xstep * _xdiv);
-      _context
+      context
         ..beginPath()
         ..arc(i.toInt(), _pheight - _borderT - (((yvals[j]) - _ymin)
             / _ystep * _ydiv), 4, 0, 2 * PI, false)
@@ -363,7 +377,7 @@ class Plot2D {
   // Drawing the curve plots - style = 'curve' or 'curvepts'.
   void _drawCurve(var dataColor, var yvals, var style) {
     var a, b, c, d;
-    _context
+    context
       ..strokeStyle = dataColor
       ..beginPath()
       ..lineJoin = "round"
@@ -376,7 +390,7 @@ class Plot2D {
       c = _pheight - _borderT - (((yvals[j]) - _ymin) / _ystep * _ydiv);
       d = _pheight - _borderT - (((yvals[j + 1]) - _ymin) / _ystep *
           _ydiv);
-      _context.quadraticCurveTo(a, c, (a + b) / 2, (c + d) / 2);
+      context.quadraticCurveTo(a, c, (a + b) / 2, (c + d) / 2);
     }
     a = _borderL + ((_xdata[_dataLength - 2] - _xmin) / _xstep * _xdiv);
     b = _borderL + ((_xdata[_dataLength - 1] - _xmin) / _xstep * _xdiv);
@@ -384,16 +398,16 @@ class Plot2D {
         / _ystep * _ydiv);
     d = _pheight - _borderT - (((yvals[_dataLength - 1]) - _ymin)
         / _ystep * _ydiv);
-    _context
+    context
       ..quadraticCurveTo(a, c, b, d)
       ..stroke();
 
     if (style == 'curvepts') {
       //Add sample points.
-      _context.fillStyle = dataColor;
+      context.fillStyle = dataColor;
       for (var j = 0; j < _dataLength; j++) {
         var i = _borderL + ((_xdata[j] - _xmin) / _xstep * _xdiv);
-        _context
+        context
           ..beginPath()
           ..arc(i.toInt(), _pheight - _borderT - (((yvals[j]) - _ymin) /
               _ystep * _ydiv), 4, 0, 2 * PI, false)
@@ -406,7 +420,7 @@ class Plot2D {
   // Drawing the line plots - style = 'line' or 'linepts'.
   void _drawLine(var dataColor, var yvals, var style) {
     //Add sample data.
-    _context
+    context
     ..strokeStyle = dataColor
     ..beginPath()
     ..lineJoin = "round"
@@ -414,16 +428,16 @@ class Plot2D {
         _pheight - _borderT - (((yvals[_index]) - _ymin) / _ystep * _ydiv));
     for (var j = 1; j < _dataLength; j++) {
       var i = _borderL + (((_xdata[j]) - _xmin)/_xstep * _xdiv);
-      _context
+      context
         ..lineTo(i.toInt(), _pheight - _borderT - (((yvals[j]) - _ymin) / _ystep * _ydiv))
         ..stroke();
     }
     if (style == 'linepts') {
       //Add sample points.
-      _context.fillStyle = dataColor;
+      context.fillStyle = dataColor;
       for (var j = 0; j < _dataLength; j++) {
         var i = _borderL + (((_xdata[j]) - _xmin)/_xstep * _xdiv);
-        _context
+        context
         ..beginPath()
         ..arc(i.toInt(), _pheight - _borderT - (((yvals[j]) - _ymin) / _ystep * _ydiv),
             4, 0, 2 * PI, false)
@@ -446,10 +460,12 @@ class Plot2D {
    */
   void grid() {
     var _offset = _style == 'data' ? _xdiv / _xstep : _xdiv;
-    _context.lineWidth = 1;
+    context
+      ..fillStyle = 'black'
+      ..lineWidth = 1;
     for (var i = _borderL + _offset; i < _pwidth - (_border - _borderL); i += _offset) {
       for (var j = _pheight - _borderT - _ydiv; j > _borderT; j -= _ydiv) {
-        _context
+        context
           ..beginPath()
           ..arc(i.toInt() + 0.5, j.toInt() + 0.5, 1, 0, 2 * PI, false)
           ..closePath()
@@ -469,9 +485,9 @@ class Plot2D {
    *     var myPlot = plot(data);
    *     myPlot.xlabel('samples(n)', color:'red', font:'8pt Arial');
    */
-  void xlabel(String xlabelName, {String color:'rgb(85, 98, 112)',
-      String font:'12pt Candara'}) {
-    _context
+  void xlabel(String xlabelName, {String color:'DarkSlateGray',
+      String font:'11pt Verdana'}) {
+    context
       ..fillStyle = color
       ..font = font
       ..textAlign = 'center'
@@ -502,13 +518,13 @@ class Plot2D {
   //relative to the size of the tick labels.  If they take up too much
   //room (ie, numbers like 1.20e+12), then may need to place the y axis
   //label above the tick marks (ie, upper left corner).
-  void ylabel(String ylabelName, {String color:'rgb(85, 98, 112)',
-      String font:'12pt Candara'}) {
+  void ylabel(String ylabelName, {String color:'DarkSlateGray',
+      String font:'11pt Verdana'}) {
     var
-      _lblWidth = _context.measureText(ylabelName),
+      _lblWidth = context.measureText(ylabelName),
       _deltax = _borderL / 4,
       _deltay = _pheight / 2;
-    _context
+    context
       ..fillStyle = color
       ..font = font
       ..textAlign = 'center'
@@ -532,21 +548,22 @@ class Plot2D {
    *     myPlot.title('A Sample Plot', color:'rgba(42, 42, 88, 0.5)',
    *         font:'14pt Caslon');
    */
-  void title(String title, {String color:'rgb(85, 98, 112)',
-      String font:'16pt Candara'}) {
-    _context
+  void title(String title, {String color:'DarkSlateGray',
+      String font:'13pt Verdana'}) {
+    context
       ..fillStyle = color
       ..textAlign = 'center'
       ..font = font
-      ..fillText(title, ((_pwidth  + (2 * _borderL) - _border)/ 2), _borderT / 2);
+      ..fillText(title, ((_pwidth  + (2 * _borderL) - _border) / 2), _borderT / 2);
   }
 
   /**
    * Adds a date stamp to the current plot.
    *
    * The date stamp can be in either a "short" form or a "long" (default) form.
-   * *long: 9:56pm Tue 16-Oct-2012
-   * *short: 9:56pm 10/16/2012
+   *
+   * * long: 9:56pm Tue 16-Oct-2012
+   * * short: 9:56pm 10/16/2012
    *
    * Usage:
    *     var myPlot = plot(data);
@@ -554,10 +571,10 @@ class Plot2D {
    */
   void date([bool short = false]) {
     String _dateTime = new TimeStamp().stamp(short);
-    _context
+    context
       ..fillStyle = 'rgb(85, 98, 112)'
       ..textAlign = 'right'
-      ..font = '10pt Candara'
+      ..font = '8pt Verdana'
       ..fillText(_dateTime, _pwidth, _pheight - _tickSize);
   }
 
@@ -578,19 +595,20 @@ class Plot2D {
    *
    */
   void legend({String l1: 'y1', String l2: 'y2', String l3: 'y3',
-      String l4: 'y4', bool top: true}) {
-    _context
-      ..font = "italic bold 14px consolas"
+      String l4: 'y4', String font: 'bold 12px Tahoma',
+      bool top: true}) {
+    context
+      ..font = font
       ..textAlign = 'left';
     var llabel = new LinkedHashMap();
     llabel["y1"] = _ydata["y1"] != null ? l1 : '';
     llabel["y2"] = _ydata["y2"] != null ? l2 : '';
     llabel["y3"] = _ydata["y3"] != null ? l3 : '';
     llabel["y4"] = _ydata["y4"] != null ? l4 : '';
-    var _yWidths = [_context.measureText(llabel["y1"]).width,
-                    _context.measureText(llabel["y2"]).width,
-                    _context.measureText(llabel["y3"]).width,
-                    _context.measureText(llabel["y4"]).width];
+    var _yWidths = [context.measureText(llabel["y1"]).width,
+                    context.measureText(llabel["y2"]).width,
+                    context.measureText(llabel["y3"]).width,
+                    context.measureText(llabel["y4"]).width];
     var
       _legendWidth = 20 + _yWidths.fold(_yWidths.first, max),
       _legendHeight = 20 + (_yWithData * _pheight) ~/ (8 * _ydata.length),
@@ -599,16 +617,17 @@ class Plot2D {
       _legendY = top == true ? _borderT + _legendBorder
           : _pheight - _legendBorder - _legendHeight - _borderT,
       _yOffset = (_legendHeight - 15) ~/ _yWithData;
-    _context
+    context
       ..fillStyle = 'white'
       ..fillRect(_legendX, _legendY, _legendWidth, _legendHeight)
       ..strokeStyle = "rgb(85, 98, 112)"    //"#556270"
       ..lineCap = "round"
-      ..strokeRect(_legendX, _legendY, _legendWidth, _legendHeight, 2)
+      ..lineWidth = 2
+      ..strokeRect(_legendX, _legendY, _legendWidth, _legendHeight)
       ..lineWidth = 1;
     for (var waveform in _ydata.keys) {
       if (_ydata[waveform] != null) {
-        _context
+        context
           ..fillStyle = _color[waveform]
           ..fillText(llabel[waveform], 10 + _legendX, _legendY + _yOffset,
               _legendWidth);
@@ -635,7 +654,7 @@ class Plot2D {
       var width:1}) {
     var offset = (width % 2) / 2;
     var _xindex = _xdata.indexOf(xval);
-    _context
+    context
       ..font = "italic bold 16px consolas"
       ..textAlign = 'left'
       ..strokeStyle = color
@@ -652,30 +671,34 @@ class Plot2D {
             var
               _dataPoint = _ydata[waveform][_xindex],
               _value = _dataPoint.toString(),
-              _valWidth = 10 + _context.measureText(_value).width,
+              _valWidth = 10 + context.measureText(_value).width,
               _valHeight = 5 + _pheight ~/ 32,
               _valX = _borderL + ((xval - _xmin) / _xstep * _xdiv),
               _valY = _pheight - _borderT - ((_dataPoint - _ymin) / _ystep * _ydiv);
             if (_xindex < _dataLength ~/ 2) {
-              _context
+              context
                 ..fillStyle = 'rgba(255, 255, 255, 0.85)'
                 ..fillRect(5 + _valX, 10 + _valY - _valHeight, _valWidth, _valHeight)
                 ..strokeStyle = 'rgba(85, 98, 112, 0.9)'   //"#556270"
                 ..lineCap = "round"
+                ..lineWidth = 1
                 ..strokeRect(5 + _valX, 10 + _valY - _valHeight, _valWidth,
-                    _valHeight, 1)
+                    _valHeight)
+                ..lineWidth = width
                 ..fillStyle = _color[waveform]
                 ..fillText(_value, 10 + _borderL + ((xval - _xmin) / _xstep * _xdiv),
                     5 + _pheight - _borderT - ((_dataPoint - _ymin) / _ystep * _ydiv));
             } else {
-              _context
+              context
                 ..fillStyle = 'rgba(255, 255, 255, 0.85)'
                 ..fillRect(_valX - _valWidth - 5, 10 + _valY - _valHeight,
                     _valWidth, _valHeight)
                 ..strokeStyle = 'rgba(85, 98, 112, 0.9)'   //"#556270"
                 ..lineCap = "round"
+                ..lineWidth = 1
                 ..strokeRect(_valX - _valWidth - 5, 10 + _valY - _valHeight,
-                    _valWidth, _valHeight, 1)
+                    _valWidth, _valHeight)
+                ..lineWidth = width
                 ..fillStyle = _color[waveform]
                 ..fillText(_value, _borderL + ((xval - _xmin) / _xstep * _xdiv) - _valWidth,
                     5 + _pheight - _borderT - ((_dataPoint - _ymin) / _ystep * _ydiv));
@@ -694,7 +717,7 @@ class Plot2D {
    */
   void ymarker(num yval, {String color:'rgb(85, 98, 112)', var width:1}) {
     var offset = (width % 2) / 2;
-    _context
+    context
       ..strokeStyle = color
       ..lineWidth = width
       ..beginPath()
@@ -711,7 +734,7 @@ class Plot2D {
    *     myPlot.save();
    */
   void save() {
-    window.open(_context.canvas.toDataUrl('image/png'), 'plotWindow');
+    window.open(context.canvas.toDataUrl('image/png'), 'plotWindow');
   }
 }
 
@@ -719,9 +742,10 @@ class Plot2D {
  * Draws all plots to a new canvas and opens a new window to allow for saving.
  *
  * Accepts 3 parameters, two of which are optional named parameters:
- * *List plots: A list of the plots that are to be printed.
- * *num scale (optional): Scales size of each canvas to be plotted (default = 1).
- * *bool quad: Determines arrangement of multiplot canvases. If quad is true
+ *
+ * * List plots: A list of the plots that are to be printed.
+ * * num scale (optional): Scales size of each canvas to be plotted (default = 1).
+ * * bool quad: Determines arrangement of multiplot canvases. If quad is true
  *   (default), plots are arranged in a 2 x n/2 matrix.  Otherwise, they are
  *   arranged vertically in a a 1 x n matrix.
  *
@@ -769,7 +793,9 @@ WindowBase saveAll(List plots, {num scale: 1.0, bool quad: true}) {
     "width": "$_widthAll",
     "height": "$_heightAll"
   });
-  CanvasRenderingContext2D _contextAll = _plotAllCanvas.context2d;
+  CanvasRenderingContext2D _contextAll = _plotAllCanvas.context2D;
+  _contextAll.fillStyle = 'white';
+  _contextAll.fillRect(0, 0, _widthAll, _heightAll);
   if (quad) {
     for (var i = 0; i < plots.length; i++) {
       _contextAll.drawImage(plots[i].context.canvas, (i % 2) * (_cwidth + _margin),
