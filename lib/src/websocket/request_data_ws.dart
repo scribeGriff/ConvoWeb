@@ -30,7 +30,7 @@ Future requestDataWS(String host, int port, var req, [Element display = null]) {
   }
   _ws.onOpen.listen((Event opn) {
     DateTime sent = new DateTime.fromMillisecondsSinceEpoch(opn.timeStamp);
-    String request = json.stringify({"request": req, "date": '$sent'});
+    String request = JSON.encode({"request": req, "date": '$sent'});
     _ws.send(request);
   });
 
@@ -52,7 +52,7 @@ Future requestDataWS(String host, int port, var req, [Element display = null]) {
   });
 
   _ws.onMessage.listen((MessageEvent msg) {
-    var data = json.parse(msg.data);
+    var data = JSON.decode(msg.data);
     if (display != null) {
       display.appendHtml('Successfully received data from the server. <br/>');
     }

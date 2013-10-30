@@ -6,7 +6,6 @@ library simplot_example;
 
 import 'package:convoweb/convoweb.dart';
 import 'package:convolab/convolab.dart';
-import 'dart:html';
 import 'dart:math';
 
 void main() {

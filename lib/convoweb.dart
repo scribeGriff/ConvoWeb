@@ -11,7 +11,7 @@ library convoweb;
 import 'package:convolab/convolab.dart';
 
 import 'dart:html';
-import 'dart:json' as json;
+import 'dart:convert';
 import 'dart:math';
 import 'dart:async';
 import 'dart:collection';
